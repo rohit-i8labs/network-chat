@@ -1,0 +1,45 @@
+services:
+  django:
+    environment:
+      - TERM=xterm
+      - DJANGO_SETTINGS_MODULE=project_chat.settings
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django_app
+    ports:  
+      - 5000
+    depends_on:
+      - db
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    restart: unless-stopped  # Add restart policy
+
+  db:
+    image: postgres:latest
+    container_name: chatdb
+    restart: unless-stopped  # Add restart policy
+    environment:
+      POSTGRES_DB: chatdb
+      POSTGRES_USER: paras
+      POSTGRES_PASSWORD: 12345678
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    depends_on:
+      - django
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped  # Add restart policy
+
+volumes:
+  postgres_data:
