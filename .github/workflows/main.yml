@@ -1,0 +1,42 @@
+on:
+    # Trigger workflow manually using the "Run workflow" button in GitHub Actions.
+    workflow_dispatch:
+  
+  jobs:
+    run_pull:
+      name: Run Pull and Deploy
+      runs-on: ubuntu-latest
+      
+      steps:
+        # Step 1: Install SSH Keys
+        - name: Install SSH Keys
+          run: |
+            # Create a new private key file with the appropriate permissions.
+            install -m 600 -D /dev/null ~/.ssh/id_rsa
+            # Write the private key from GitHub Secrets into the file.
+            echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+            # Add the SSH host to the known hosts file to avoid interactive prompt.
+            ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+        
+        # Step 2: Connect to the remote server and pull the latest changes from the repository
+        - name: Connect and Pull Changes
+          run: |
+            ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "\
+              cd ${{ secrets.WORK_DIR }} && \
+              git checkout ${{ secrets.MAIN_BRANCH }} && \
+              git pull && \
+              exit"
+  
+        # Step 3: Build and Run Docker Compose
+        - name: Build and Run Docker Compose
+          run: |
+            ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "\
+              cd ${{ secrets.WORK_DIR }} && \
+              sudo docker compose build && \
+              sudo docker compose up -d && \
+              docker image prune -f"
+        
+        # Step 4: Clean Up SSH Configuration
+        - name: Cleanup SSH Configuration
+          run: rm -rf ~/.ssh
+  
