@@ -31,6 +31,8 @@ INSTALLED_APPS = [
     'chat',
     'django_filters',
     'rest_framework',
+    'rest_framework_swagger',  # Swagger
+    'drf_yasg',
     'channels',
     'corsheaders',
     'phonenumber_field',
