@@ -23,6 +23,8 @@ DEBUG = True
 # Allowed Hosts
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 # ALLOWED_HOSTS = ["*"] 
+CSRF_TRUSTED_ORIGINS = ['https://rk4huq4sfe.execute-api.eu-north-1.amazonaws.com']
+
 
 # Application definition
 
