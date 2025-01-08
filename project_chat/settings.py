@@ -15,16 +15,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4vaf7854=_2m1rtshtc%()p)r&^0&r&r&80kwcs#=g=#kfwb(c'
+SECRET_KEY = DEBUG = os.getenv("SECRET_KEY","my_secret_key")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG","true") == "true"
 
 # Allowed Hosts
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 # ALLOWED_HOSTS = ["*"] 
-CSRF_TRUSTED_ORIGINS = ['https://rk4huq4sfe.execute-api.eu-north-1.amazonaws.com']
-
+CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS = os.getenv("CSRF_TRUSTED_ORIGINS", "*").split(",")
 
 # Application definition
 
@@ -178,8 +178,13 @@ REST_FRAMEWORK = {
     ],
 }
 
+# How long is the user token valid
+ACCESS_TOKEN_LIFETIME = timedelta(hours=int(os.getenv('USER_SESSION_LIFETIME_HOURS', '1')))
+# How frequently should the variable id of the chat-rooms must change
+VARIBLE_ID_REFRESH_INTERVAL_HOURS = 3600.0 * int(os.getenv('VARIBLE_ID_REFRESH_INTERVAL_HOURS', '1'))
+
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': ACCESS_TOKEN_LIFETIME,
     'REFRESH_TOKEN_LIFETIME': timedelta(weeks=4), 
 }
 
@@ -188,7 +193,6 @@ CELERY_BROKER_URL = "redis://redis:6379/0"
 CELERY_BEAT_SCHEDULE = {
     'refresh-variable-ids': {
         'task': 'chat.tasks.regenerate_variable_ids',
-        'schedule': 3600.0,  # Refresh every hour
-        # 'schedule': 20.0,  # Refresh every hour
+        'schedule': VARIBLE_ID_REFRESH_INTERVAL_HOURS,  # Refresh variable id
     },
 }

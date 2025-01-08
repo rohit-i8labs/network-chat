@@ -2,14 +2,15 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.timezone import now, timedelta
 import uuid
+from django.conf import settings
 
 def default_variable_id_expiry():
     """Returns the default expiry time for variable_id."""
-    return now() + timedelta(hours=1)
+    return now() + timedelta(hours=settings.VARIBLE_ID_REFRESH_INTERVAL_HOURS)
 
 def session_expiry_time():
     """Returns the  expiry time for session."""
-    return now() + timedelta(hours=1)
+    return now() + settings.ACCESS_TOKEN_LIFETIME
 
 class ChatRoom(models.Model):
     """Model to represent a chat room."""
