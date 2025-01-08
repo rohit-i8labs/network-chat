@@ -6,8 +6,7 @@ from django.conf import settings
 
 def default_variable_id_expiry():
     """Returns the default expiry time for variable_id."""
-    return now() + timedelta(hours=settings.VARIBLE_ID_REFRESH_INTERVAL_HOURS)
-
+    return now() + timedelta(hours=settings.VARIBLE_ID_REFRESH_INTERVAL_HOURS/3600)
 def session_expiry_time():
     """Returns the  expiry time for session."""
     return now() + settings.ACCESS_TOKEN_LIFETIME

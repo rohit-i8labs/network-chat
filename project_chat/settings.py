@@ -153,8 +153,12 @@ CHANNEL_LAYERS = {
             "CONFIG": {
                 "hosts": [("redis", 6379)],
             },
+            
     },
-    }
+    # "default": {
+    #     "BACKEND": "channels.layers.InMemoryChannelLayer"
+    # }
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
