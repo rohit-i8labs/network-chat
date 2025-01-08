@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
-from .models import ChatRoom, Message, ChatSession
+from .models import ChatRoom, Message, ChatSession, todaysSpecial, Coupon
 from django.contrib.auth.models import User
-from .serializers import ChatRoomSerializer, MessageSerializer, ChatSessionSerializer,UserSerializer
+from .serializers import ChatRoomSerializer, MessageSerializer, ChatSessionSerializer,UserSerializer, TodaysSpecialserializer, CouponSerializer
 
 class ChatRoomViewSet(viewsets.ModelViewSet):
     """ViewSet to list and create chat rooms."""
@@ -66,3 +66,34 @@ class UserViewSet(viewsets.ViewSet):
         """Allows authenticated users to view their details via GET."""
         serializer = self.serializer_class(request.user)
         return Response(serializer.data)
+    
+class TodaysSpecialViewSet(viewsets.ViewSet):
+    queryset = todaysSpecial.objects.all().order_by('-timestamp')
+
+    def list(self, request):
+        """Fetch the list of today's specials."""
+        queryset = self.queryset
+        serializer = TodaysSpecialserializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        """Create a new today's special."""
+        self.permission_classes = [permissions.IsAuthenticated]
+        self.check_permissions(request)
+
+        serializer = TodaysSpecialserializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+    
+class CouponViewSet(viewsets.ViewSet):
+    queryset = Coupon.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    def list(self, request):
+        """Fetch the list of today's specials."""
+        queryset = self.queryset
+        serializer = CouponSerializer(queryset, many=True)
+        return Response(serializer.data)    

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ChatRoom, Message,ChatSession
+from .models import ChatRoom, Message,ChatSession, todaysSpecial, Coupon
 from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
@@ -25,3 +25,13 @@ class ChatSessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatSession
         fields = ['id', 'chat_room', 'user', 'joined_at',"session_expiry"]
+
+class TodaysSpecialserializer(serializers.ModelSerializer):
+    class Meta:
+        model =  todaysSpecial
+        fields = ['special','timestamp']        
+
+class CouponSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =  Coupon
+        fields = ['name','description','coupon_code']                

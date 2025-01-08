@@ -38,3 +38,14 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.sender.username}: {self.text[:20]}"
+
+class todaysSpecial(models.Model):
+    """Model to store todays special."""
+    special = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+class Coupon(models.Model):
+    """Model to store coupons."""
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    coupon_code = models.CharField(max_length=255)
