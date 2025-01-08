@@ -23,8 +23,7 @@ DEBUG = os.getenv("DEBUG","true") == "true"
 
 # Allowed Hosts
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
-# ALLOWED_HOSTS = ["*"] 
-CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS = os.getenv("CSRF_TRUSTED_ORIGINS", "*").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "*").split(",")
 
 # Application definition
 
@@ -39,6 +38,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'phonenumber_field',
     'rest_framework_simplejwt',
+    "unfold",
 
     'django.contrib.admin',
     'django.contrib.auth',
