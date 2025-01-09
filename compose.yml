@@ -1,4 +1,5 @@
 services:
+  # Django App
   django_app:
     environment:
       - TERM=xterm
@@ -18,22 +19,7 @@ services:
     restart: unless-stopped  # Add restart policy
     networks:
       - caddy
-
-  db:
-    image: postgres:latest
-    container_name: chatdb
-    restart: unless-stopped  # Add restart policy
-    environment:
-      POSTGRES_DB: chatdb
-      POSTGRES_USER: paras
-      POSTGRES_PASSWORD: 12345678
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    networks:
-      - caddy  
-
+  # Reverse Proxy Server
   caddy:
     image: caddy:latest
     container_name: caddy
@@ -49,7 +35,8 @@ services:
       - ./caddy_config:/config
     networks:
       - caddy   
-
+  
+  # Broker and cache
   redis:
     image: redis:6.2-alpine
     restart: always
@@ -61,7 +48,8 @@ services:
       - redis_volume:/data
     networks:
       - caddy  
-
+ 
+  #Cron job maker
   celery:
     build:
       context: .
@@ -77,6 +65,7 @@ services:
     networks:
       - caddy  
 
+  #Cron Job Runner
   celery-beat:
     build:
       context: .
@@ -91,6 +80,23 @@ services:
       - redis
     networks:
       - caddy  
+
+    # We are using ADS RDS so we dont need this any more 
+
+  # db:
+  #   image: postgres:latest
+  #   container_name: chatdb
+  #   restart: unless-stopped  # Add restart policy
+  #   environment:
+  #     POSTGRES_DB: chatdb
+  #     POSTGRES_USER: paras
+  #     POSTGRES_PASSWORD: 12345678
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data/
+  #   networks:
+  #     - caddy 
 
 volumes:
   caddy_data:

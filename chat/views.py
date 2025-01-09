@@ -77,20 +77,22 @@ class TodaysSpecialViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
-        """Create a new today's special."""
-        self.permission_classes = [permissions.IsAuthenticated]
-        self.check_permissions(request)
+        """Create a new today's special. Only by Admin"""
+        if not request.user.is_authenticated:
+            return Response({"error": "Authentication is required."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not request.user.is_superuser and not request.user.is_staff:
+            return Response({"error": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = TodaysSpecialserializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class CouponViewSet(viewsets.ViewSet):
     queryset = Coupon.objects.all()
     permission_classes = [permissions.IsAuthenticated]
-
 
     def list(self, request):
         """Fetch the list of today's specials."""
