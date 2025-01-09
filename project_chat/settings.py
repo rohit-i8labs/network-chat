@@ -38,8 +38,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'phonenumber_field',
     'rest_framework_simplejwt',
-    "unfold",
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

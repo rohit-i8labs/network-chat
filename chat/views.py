@@ -56,6 +56,8 @@ class UserViewSet(viewsets.ViewSet):
             user = User.objects.create_user(
                 username=serializer.validated_data['username'],
                 email=serializer.validated_data['email'],
+                first_name=serializer.validated_data['first_name'],
+                last_name=serializer.validated_data['last_name'],
                 password=password
             )
             return Response(self.serializer_class(user).data, status=status.HTTP_201_CREATED)
