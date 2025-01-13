@@ -10,6 +10,8 @@ from datetime import datetime, timedelta, timezone
 import uuid
 from icecream import ic
 from urllib.parse import parse_qs
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):

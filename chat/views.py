@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from .models import ChatRoom, Message, ChatSession, todaysSpecial, Coupon
 from django.contrib.auth.models import User
 from .serializers import ChatRoomSerializer, MessageSerializer, ChatSessionSerializer,UserSerializer, TodaysSpecialserializer, CouponSerializer
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 class ChatRoomViewSet(viewsets.ModelViewSet):
     """ViewSet to list and create chat rooms."""
