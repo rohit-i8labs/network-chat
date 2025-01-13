@@ -43,9 +43,12 @@ class todaysSpecial(models.Model):
     """Model to store todays special."""
     special = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, blank=True, null=True)
+
 
 class Coupon(models.Model):
     """Model to store coupons."""
     name = models.CharField(max_length=100)
+    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, blank=True, null=True)
     description = models.TextField()
     coupon_code = models.CharField(max_length=255)

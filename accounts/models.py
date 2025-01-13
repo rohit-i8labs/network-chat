@@ -11,7 +11,6 @@ class CustomUser(AbstractUser):
     user_type = models.CharField(
         max_length=20,
         choices=USER_TYPE_CHOICES,
-        default='customer',
     )
 
     def __str__(self):
