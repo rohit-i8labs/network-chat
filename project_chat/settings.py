@@ -36,6 +36,7 @@ CORS_ALLOW_CREDENTIALS = True
 INSTALLED_APPS = [
     'daphne',
     'chat',
+    'django_celery_beat',
     'accounts',
     'django_filters',
     'rest_framework',
@@ -205,11 +206,15 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(weeks=4), 
 }
 
-CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Replace with your Redis URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+# CELERY_BROKER_URL = "redis://redis:6379/0"
 
-CELERY_BEAT_SCHEDULE = {
-    'refresh-variable-ids': {
-        'task': 'chat.tasks.regenerate_variable_ids',
-        'schedule': VARIBLE_ID_REFRESH_INTERVAL_HOURS,  # Refresh variable id
-    },
-}
+# CELERY_BEAT_SCHEDULE = {
+#     'refresh-variable-ids': {
+#         'task': 'chat.tasks.regenerate_variable_ids',
+#         'schedule': VARIBLE_ID_REFRESH_INTERVAL_HOURS,  # Refresh variable id
+#     },
+# }

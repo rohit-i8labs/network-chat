@@ -1,54 +1,81 @@
-from django.contrib.auth.models import User
+import random
+import string
 from django.db import models
-from django.utils.timezone import now, timedelta
-import uuid
+from django.utils.timezone import now
 from django.conf import settings
+from datetime import timedelta
+from icecream import ic
+from django.utils.timezone import now
 
-def default_variable_id_expiry():
-    """Returns the default expiry time for variable_id."""
-    return now() + timedelta(hours=settings.VARIBLE_ID_REFRESH_INTERVAL_HOURS/3600)
-def session_expiry_time():
-    """Returns the  expiry time for session."""
-    return now() + settings.ACCESS_TOKEN_LIFETIME
+def generate_unique_var_id():
+    """Generate a unique 6-digit alphanumeric ID."""
+    return ''.join(random.choices(string.digits, k=6))
 
-class ChatRoom(models.Model):
-    """Model to represent a chat room."""
-    name = models.CharField(max_length=255, blank=True, null=True)
-    is_group = models.BooleanField(default=False)
-    members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='chat_rooms')
-    variable_id = models.UUIDField(default=uuid.uuid4, editable=False)
-    variable_id_expiry = models.DateTimeField(default=default_variable_id_expiry, editable=False)
+
+class Restaurant(models.Model):
+    QR_GEN_FREQUENCY_CHOICES = [
+        ('hourly', 1),
+        ('daily', 24),
+        ('weekly', 168),
+        ('monthly', 730),
+    ]
+
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    logo = models.ImageField(upload_to='media/images', null=True, blank=True)
+    owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="owned_restaurant")
+    total_customers = models.IntegerField(default=0)
+    date_created = models.DateTimeField(auto_now_add=True)
+    avg_stay_time = models.DurationField(default=timedelta(minutes=0))
+    todays_special = models.TextField()
+    customers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="visited_restaurants", blank=True)
+    total_messages = models.IntegerField(default=0)
+    var_id = models.CharField(max_length=6, unique=True, null=True,blank=True, default=generate_unique_var_id)
+    qr_gen_frequency = models.CharField(max_length=20, choices=QR_GEN_FREQUENCY_CHOICES)
+    var_id_gen_time = models.DateTimeField(default=now)
+    var_id_expiry_time = models.DateTimeField(null=True,blank=True)
+    total_qr_scanned = models.IntegerField(default=0)
+    token_refresh_frequency = models.PositiveIntegerField(default=1, help_text="Time in hours")
+
+    def save(self, *args, **kwargs):
+        # Ensure var_id is unique before saving
+        if not self.var_id:
+            self.var_id = self.generate_unique_var_id()
+        # Calculate var_id_expiry_time
+        qr_hours = dict(self.QR_GEN_FREQUENCY_CHOICES)[self.qr_gen_frequency]
+        print("==========================")
+        # ic(qr_hours)
+        # ic(self.var_id_gen_time)
+        # ic(timedelta(hours=qr_hours))
+        self.var_id_expiry_time = self.var_id_gen_time + timedelta(hours=qr_hours)
+        super().save(*args, **kwargs)
+
+    @staticmethod
+    def generate_unique_var_id():
+        """Generate a unique var_id if default fails."""
+        while True:
+            var_id = generate_unique_var_id()
+            if not Restaurant.objects.filter(var_id=var_id).exists():
+                return var_id
 
     def __str__(self):
-        return self.name or f"Private Chat ({self.id})"
+        return self.name
 
-class ChatSession(models.Model):
-    """Tracks user sessions in a chat room."""
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
-    joined_at = models.DateTimeField(auto_now_add=True)
-    session_expiry = models.DateTimeField(default=session_expiry_time, editable=False)
+class Offer(models.Model):
+    description = models.TextField()
+    time_based = models.BooleanField(default=False)
+    duration = models.PositiveIntegerField(default=1, help_text="Duration in hours if time-based")
+
+    def __str__(self):
+        return f"Offer: {self.description[:50]}{'...' if len(self.description) > 50 else ''}"
 
 class Message(models.Model):
-    """Model to store messages."""
-    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     text = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_messages")
+    is_private = models.BooleanField(default=False)
+    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="received_messages", null=True, blank=True)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.sender.username}: {self.text[:20]}"
-
-class todaysSpecial(models.Model):
-    """Model to store todays special."""
-    special = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, blank=True, null=True)
-
-
-class Coupon(models.Model):
-    """Model to store coupons."""
-    name = models.CharField(max_length=100)
-    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, blank=True, null=True)
-    description = models.TextField()
-    coupon_code = models.CharField(max_length=255)
+        return f"Message from {self.sender} at {self.timestamp}"
